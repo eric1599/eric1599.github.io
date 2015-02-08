@@ -1,1 +1,85 @@
-testing testing 1234
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta charset="UTF-8"> 
+	<title>San Francisco : Online Services</title>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+ </head>
+<body>
+Web Status Dashboard
+ <div id="status"></div>
+ Average Response time:
+ <div id="perf"></div>
+ Last update:<div id="time"></div>
+ <div id="up" style="display:none">All Web systems are operational</div>
+ <div id="down" style="display:none">Some City web sites are currently experiencing a delayed response.  We are aware of this issue and are working with the vendor to resolve it quickly.  We will update this dashboard once the issue is resolved and please feel free to contact our City Webmaster (webmaster@sfgov.org) if you have any questions.  Thanks for your patience.</div>
+</body>
+
+<script>
+console.log('there');
+var Notice = {
+	init:function(){
+
+		$(document).ready(function() {  
+			Notice.checkDomain();
+			setInterval(function () {Notice.checkDomain()}, 120000);
+		});
+	},
+	
+	checkDomain:function(){
+	var yql="http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20json%20where%20url%3D%22http%3A%2F%2Fwww.monitis.com%2Fapi%3Fapikey%3D564CD3L2LM8JCEA93INMABS7VE%26output%3Djson%26version%3D2%26action%3DtestsLastValues%26locationIds%3D27%22%20&format=json";
+	
+		$.ajax({
+			 type: "GET",
+			 url: yql,
+			 contentType: "application/json; charset=utf-8",
+			 dataType: "jsonp",
+			 timeout:5000,
+			 success: function(o){
+				Notice.parseData(o);
+			  },
+			 error: function(xhr, textStatus, errorThrown){		
+//console.log("error:" + textStatus + errorThrown)			 
+//				window.location=op;
+			 }
+		   });
+	 
+	},
+	
+	parseData:function(o){
+		var noticePage="http://www6.sfgov.org/index.aspx?page=239";
+		data=o.query.results.json.data;
+		cnt=0,status=0,perf=0,t=0;
+console.log(data);		
+		for(var i=0;i<data.length;i++){	
+//console.log(data[i].name);
+//console.log(data[i].perf);
+			perf+=parseInt(data[i].perf);
+			cnt++;
+			if(data[i].status != 'OK'){status=1;}	
+		}
+console.log(perf);		
+console.log(cnt);		
+console.log("Status:"+ status);	
+		perf = perf/cnt;
+console.log("Perf:" + perf );	
+		$("#perf").html(perf);
+		t=new Date($.now());
+		$("#time").html(t);
+		if(status==0){
+			$("#status").html('OK');
+			$("#up").show();
+			$("#down").hide();
+		}else{
+			$("#status").html('DOWN');
+			$("#up").hide();
+			$("#down").show();
+		}
+	}
+}
+Notice.init();
+console.log('go');
+</script>
+</html>
